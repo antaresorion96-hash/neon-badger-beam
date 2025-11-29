@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { supabase } from "@/integrations/supabase/client";
-import { useSession } from "@/integrations/supabase/auth";
-import { showSuccess, showError } from "@/utils/toast";
+import { showError } from "@/utils/toast";
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 interface Product {
   id: string;
@@ -19,7 +19,7 @@ interface Product {
 }
 
 const LightingStore = () => {
-  const { user } = useSession();
+  const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,85 +36,13 @@ const LightingStore = () => {
     fetchProducts();
   }, []);
 
-  const handleAddToCart = async (product: Product) => {
-    if (!user) {
-      showError("Будь ласка, увійдіть, щоб додати товари в кошик.");
-      return;
-    }
-
-    // Check if user already has a cart
-    let { data: cart, error: cartError } = await supabase
-      .from('carts')
-      .select('id')
-      .eq('chat_id', user.id) // Using user.id as chat_id for simplicity
-      .single();
-
-    if (cartError && cartError.code !== 'PGRST116') { // PGRST116 means no rows found
-      showError("Помилка отримання кошика: " + cartError.message);
-      return;
-    }
-
-    let cartId = cart?.id;
-
-    if (!cartId) {
-      // Create a new cart if none exists
-      const { data: newCart, error: newCartError } = await supabase
-        .from('carts')
-        .insert({ chat_id: user.id })
-        .select('id')
-        .single();
-
-      if (newCartError) {
-        showError("Помилка створення кошика: " + newCartError.message);
-        return;
-      }
-      cartId = newCart.id;
-    }
-
-    // Add item to cart or update quantity
-    const { data: existingItem, error: itemError } = await supabase
-      .from('cart_items')
-      .select('*')
-      .eq('cart_id', cartId)
-      .eq('product_id', product.id)
-      .single();
-
-    if (itemError && itemError.code !== 'PGRST116') {
-      showError("Помилка перевірки товару в кошику: " + itemError.message);
-      return;
-    }
-
-    if (existingItem) {
-      // Update quantity
-      const { error: updateError } = await supabase
-        .from('cart_items')
-        .update({ quantity: existingItem.quantity + 1 })
-        .eq('id', existingItem.id);
-
-      if (updateError) {
-        showError("Помилка оновлення кількості товару: " + updateError.message);
-        return;
-      }
-    } else {
-      // Insert new item
-      const { error: insertError } = await supabase
-        .from('cart_items')
-        .insert({
-          cart_id: cartId,
-          product_id: product.id,
-          product_name: product.name,
-          product_price: product.price,
-          product_image: product.image_url,
-          quantity: 1,
-        });
-
-      if (insertError) {
-        showError("Помилка додавання товару в кошик: " + insertError.message);
-        return;
-      }
-    }
-
-    showSuccess(`${product.name} додано в кошик!`);
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.image_url,
+    });
   };
 
   if (loading) {
