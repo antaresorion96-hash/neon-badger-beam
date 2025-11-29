@@ -7,8 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LightingStore from "./pages/LightingStore";
 import Login from "./pages/Login";
-import Cart from "./pages/Cart"; // Will create this
-import { SessionContextProvider, useSession } from "./integrations/supabase/auth";
+import Cart from "./pages/Cart";
+import { SessionContextProvider, useSession } from "./integrations/supabase/auth.tsx"; // Оновлено розширення файлу
 
 const queryClient = new QueryClient();
 
