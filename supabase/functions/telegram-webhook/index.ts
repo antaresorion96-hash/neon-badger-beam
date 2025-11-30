@@ -25,8 +25,8 @@ serve(async (req) => {
       const text = message.text;
 
       if (text === '/start') {
-        // Replace with your actual deployed Vercel app URL
-        const webAppUrl = "https://YOUR_VERCEL_APP_URL.vercel.app/lighting-store"; 
+        // Updated with the provided Vercel app URL
+        const webAppUrl = "https://neon-badger-beam-mb0s58fbw-refaliances-projects.vercel.app/lighting-store"; 
         const responseText = `Ласкаво просимо до нашого магазину освітлення! ✨\n\nПерегляньте наші товари тут: ${webAppUrl}`;
 
         const telegramApiUrl = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
