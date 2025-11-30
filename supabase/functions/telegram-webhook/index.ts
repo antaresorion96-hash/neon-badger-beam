@@ -25,10 +25,8 @@ serve(async (req) => {
       const text = message.text;
 
       if (text === '/start') {
-        // Updated with the provided Vercel app URL
         const webAppUrl = "https://neon-badger-beam-mb0s58fbw-refaliances-projects.vercel.app/lighting-store"; 
-        const responseText = `Ласкаво просимо до нашого магазину освітлення! ✨\n\nПерегляньте наші товари тут: ${webAppUrl}`;
-
+        
         const telegramApiUrl = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
         await fetch(telegramApiUrl, {
           method: 'POST',
@@ -37,8 +35,19 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             chat_id: chatId,
-            text: responseText,
-            parse_mode: 'Markdown',
+            text: "Ласкаво просимо до нашого магазину освітлення! ✨",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Відкрити магазин",
+                    web_app: {
+                      url: webAppUrl
+                    }
+                  }
+                ]
+              ]
+            }
           }),
         });
       }
