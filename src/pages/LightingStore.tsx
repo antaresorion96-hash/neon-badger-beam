@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { Link } from "react-router-dom";
@@ -152,7 +151,6 @@ const LightingStore = () => {
           </div>
         )}
       </div>
-      <MadeWithDyad />
     </div>
   );
 };

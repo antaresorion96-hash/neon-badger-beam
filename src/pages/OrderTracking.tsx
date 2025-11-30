@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useOrder } from "@/context/OrderContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from 'date-fns';
@@ -102,7 +101,6 @@ const OrderTracking = () => {
           </Link>
         </div>
       </div>
-      <MadeWithDyad />
     </div>
   );
 };

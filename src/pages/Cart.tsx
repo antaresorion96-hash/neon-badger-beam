@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link, useNavigate } from "react-router-dom";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -89,7 +88,6 @@ const Cart = () => {
           </div>
         )}
       </div>
-      <MadeWithDyad />
     </div>
   );
 };

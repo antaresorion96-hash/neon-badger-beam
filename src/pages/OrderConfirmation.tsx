@@ -3,7 +3,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const OrderConfirmation = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
@@ -42,7 +41,6 @@ const OrderConfirmation = () => {
           </Link>
         </div>
       </div>
-      <MadeWithDyad />
     </div>
   );
 };
