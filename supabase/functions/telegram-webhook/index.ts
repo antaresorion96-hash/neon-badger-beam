@@ -25,7 +25,8 @@ serve(async (req) => {
       const text = message.text;
 
       if (text === '/start') {
-        const webAppUrl = "https://neon-badger-beam-mb0s58fbw-refaliances-projects.vercel.app/lighting-store"; 
+        // Updated with the new Vercel app URL
+        const webAppUrl = "https://neon-badger-beam-gold.vercel.app/lighting-store"; 
         
         const telegramApiUrl = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
         await fetch(telegramApiUrl, {
