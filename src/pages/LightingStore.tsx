@@ -74,7 +74,6 @@ const LightingStore = () => {
       } else {
         const fetchedProducts: Product[] = productsData as Product[];
         setProducts(fetchedProducts);
-        console.log("Fetched Products with Variations:", fetchedProducts); // Додано логування
 
         // Initialize selected variations for products with variations
         const initialSelectedVariations: { [productId: string]: ProductVariation } = {};
@@ -202,25 +201,24 @@ const LightingStore = () => {
                   <CardContent className="p-4 pt-0">
                     <div className="flex items-center justify-between mb-4"> {/* Flex container for price and dropdown */}
                       <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{displayPrice.toFixed(2)} грн</p>
-                      {product.variations && product.variations.length > 0 && (
-                        <div className="w-[180px]"> {/* Fixed width for dropdown */}
-                          <Select
-                            onValueChange={(value) => handleVariationChange(product.id, value)}
-                            value={currentVariation?.id}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Виберіть варіант" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {product.variations.map((variation) => (
-                                <SelectItem key={variation.id} value={variation.id}>
-                                  {variation.variation_name} - {variation.price} грн
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
+                      <div className="w-[180px]"> {/* Fixed width for dropdown */}
+                        <Select
+                          onValueChange={(value) => handleVariationChange(product.id, value)}
+                          value={currentVariation?.id}
+                          disabled={!product.variations || product.variations.length === 0} // Disable if no variations
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={product.variations && product.variations.length > 0 ? "Виберіть варіант" : "Немає варіантів"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {product.variations && product.variations.map((variation) => (
+                              <SelectItem key={variation.id} value={variation.id}>
+                                {variation.variation_name} - {variation.price} грн
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
