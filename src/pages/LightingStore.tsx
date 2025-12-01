@@ -26,7 +26,7 @@ interface Product {
   price: number; // This will be the default/highest price for parent products
   image_url: string;
   category_id: string | null;
-  variations?: ProductVariation[]; // Optional variations array
+  product_variations?: ProductVariation[]; // Supabase returns nested data as 'product_variations'
 }
 
 interface Category {
@@ -72,15 +72,16 @@ const LightingStore = () => {
       if (productsError) {
         showError("Помилка завантаження товарів: " + productsError.message);
       } else {
+        console.log("Fetched Products with Variations:", productsData); // ADDED LOG HERE
         const fetchedProducts: Product[] = productsData as Product[];
         setProducts(fetchedProducts);
 
         // Initialize selected variations for products with variations
         const initialSelectedVariations: { [productId: string]: ProductVariation } = {};
         fetchedProducts.forEach(product => {
-          if (product.variations && product.variations.length > 0) {
+          if (product.product_variations && product.product_variations.length > 0) {
             // Select the FIRST variation as default
-            initialSelectedVariations[product.id] = product.variations[0];
+            initialSelectedVariations[product.id] = product.product_variations[0];
           }
         });
         setSelectedVariations(initialSelectedVariations);
@@ -92,8 +93,8 @@ const LightingStore = () => {
 
   const handleVariationChange = useCallback((productId: string, variationId: string) => {
     const product = products.find(p => p.id === productId);
-    if (product && product.variations) {
-      const selected = product.variations.find(v => v.id === variationId);
+    if (product && product.product_variations) { // Changed to product_variations
+      const selected = product.product_variations.find(v => v.id === variationId);
       if (selected) {
         setSelectedVariations(prev => ({ ...prev, [productId]: selected }));
       }
@@ -101,7 +102,7 @@ const LightingStore = () => {
   }, [products]);
 
   const handleAddToCart = (product: Product) => {
-    if (product.variations && product.variations.length > 0) {
+    if (product.product_variations && product.product_variations.length > 0) { // Changed to product_variations
       const selectedVariation = selectedVariations[product.id];
       if (selectedVariation) {
         addToCart({
@@ -178,8 +179,8 @@ const LightingStore = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => {
-              const currentVariation = product.variations && product.variations.length > 0
-                ? selectedVariations[product.id] || product.variations[0]
+              const currentVariation = product.product_variations && product.product_variations.length > 0 // Changed to product_variations
+                ? selectedVariations[product.id] || product.product_variations[0]
                 : undefined;
 
               const displayPrice = currentVariation ? currentVariation.price : product.price;
@@ -205,13 +206,13 @@ const LightingStore = () => {
                         <Select
                           onValueChange={(value) => handleVariationChange(product.id, value)}
                           value={currentVariation?.id}
-                          disabled={!product.variations || product.variations.length === 0} // Disable if no variations
+                          disabled={!product.product_variations || product.product_variations.length === 0} // Changed to product_variations
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={product.variations && product.variations.length > 0 ? "Виберіть варіант" : "Немає варіантів"} />
+                            <SelectValue placeholder={product.product_variations && product.product_variations.length > 0 ? "Виберіть варіант" : "Немає варіантів"} />
                           </SelectTrigger>
                           <SelectContent>
-                            {product.variations && product.variations.map((variation) => (
+                            {product.product_variations && product.product_variations.map((variation) => ( // Changed to product_variations
                               <SelectItem key={variation.id} value={variation.id}>
                                 {variation.variation_name} - {variation.price} грн
                               </SelectItem>
