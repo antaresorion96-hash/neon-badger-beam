@@ -74,6 +74,7 @@ const LightingStore = () => {
       } else {
         const fetchedProducts: Product[] = productsData as Product[];
         setProducts(fetchedProducts);
+        console.log("Fetched Products with Variations:", fetchedProducts); // Додано логування
 
         // Initialize selected variations for products with variations
         const initialSelectedVariations: { [productId: string]: ProductVariation } = {};
