@@ -79,11 +79,8 @@ const LightingStore = () => {
         const initialSelectedVariations: { [productId: string]: ProductVariation } = {};
         fetchedProducts.forEach(product => {
           if (product.variations && product.variations.length > 0) {
-            // Select the variation with the highest price as default
-            const highestPriceVariation = product.variations.reduce((prev, current) =>
-              (prev.price > current.price) ? prev : current
-            );
-            initialSelectedVariations[product.id] = highestPriceVariation;
+            // Select the FIRST variation as default
+            initialSelectedVariations[product.id] = product.variations[0];
           }
         });
         setSelectedVariations(initialSelectedVariations);
@@ -202,26 +199,28 @@ const LightingStore = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    {product.variations && product.variations.length > 0 && (
-                      <div className="mb-4">
-                        <Select
-                          onValueChange={(value) => handleVariationChange(product.id, value)}
-                          value={currentVariation?.id}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Виберіть варіант" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {product.variations.map((variation) => (
-                              <SelectItem key={variation.id} value={variation.id}>
-                                {variation.variation_name} - {variation.price} грн
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{displayPrice.toFixed(2)} грн</p>
+                    <div className="flex items-center justify-between mb-4"> {/* Flex container for price and dropdown */}
+                      <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{displayPrice.toFixed(2)} грн</p>
+                      {product.variations && product.variations.length > 0 && (
+                        <div className="w-[180px]"> {/* Fixed width for dropdown */}
+                          <Select
+                            onValueChange={(value) => handleVariationChange(product.id, value)}
+                            value={currentVariation?.id}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Виберіть варіант" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {product.variations.map((variation) => (
+                                <SelectItem key={variation.id} value={variation.id}>
+                                  {variation.variation_name} - {variation.price} грн
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     <Button className="w-full" onClick={() => handleAddToCart(product)}>Додати в кошик</Button>
