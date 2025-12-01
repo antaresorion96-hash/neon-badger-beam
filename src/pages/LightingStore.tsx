@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,15 +8,25 @@ import { showError } from "@/utils/toast";
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface ProductVariation {
+  id: string;
+  product_id: string;
+  variation_name: string;
+  price: number;
+  image_url: string | null;
+}
 
 interface Product {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number; // This will be the default/highest price for parent products
   image_url: string;
-  category_id: string | null; // Add category_id
+  category_id: string | null;
+  variations?: ProductVariation[]; // Optional variations array
 }
 
 interface Category {
@@ -30,6 +40,7 @@ const LightingStore = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedVariations, setSelectedVariations] = useState<{ [productId: string]: ProductVariation }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,32 +57,74 @@ const LightingStore = () => {
         setCategories(categoriesData as Category[]);
       }
 
-      // Fetch products
-      let productsQuery = supabase.from('products').select('*');
+      // Fetch products and their variations
+      let productsQuery = supabase
+        .from('products')
+        .select('*, product_variations(*)') // Fetch products and their related variations
+        .order('name', { ascending: true });
+
       if (selectedCategory) {
         productsQuery = productsQuery.eq('category_id', selectedCategory);
       }
-      productsQuery = productsQuery.order('name', { ascending: true });
 
       const { data: productsData, error: productsError } = await productsQuery;
 
       if (productsError) {
         showError("Помилка завантаження товарів: " + productsError.message);
       } else {
-        setProducts(productsData as Product[]);
+        const fetchedProducts: Product[] = productsData as Product[];
+        setProducts(fetchedProducts);
+
+        // Initialize selected variations for products with variations
+        const initialSelectedVariations: { [productId: string]: ProductVariation } = {};
+        fetchedProducts.forEach(product => {
+          if (product.variations && product.variations.length > 0) {
+            // Select the variation with the highest price as default
+            const highestPriceVariation = product.variations.reduce((prev, current) =>
+              (prev.price > current.price) ? prev : current
+            );
+            initialSelectedVariations[product.id] = highestPriceVariation;
+          }
+        });
+        setSelectedVariations(initialSelectedVariations);
       }
       setLoading(false);
     };
     fetchData();
-  }, [selectedCategory]); // Re-fetch when selectedCategory changes
+  }, [selectedCategory]);
+
+  const handleVariationChange = useCallback((productId: string, variationId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product && product.variations) {
+      const selected = product.variations.find(v => v.id === variationId);
+      if (selected) {
+        setSelectedVariations(prev => ({ ...prev, [productId]: selected }));
+      }
+    }
+  }, [products]);
 
   const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image_url: product.image_url,
-    });
+    if (product.variations && product.variations.length > 0) {
+      const selectedVariation = selectedVariations[product.id];
+      if (selectedVariation) {
+        addToCart({
+          id: selectedVariation.id, // Use variation ID for cart item
+          name: `${product.name} (${selectedVariation.variation_name})`,
+          price: selectedVariation.price,
+          image_url: selectedVariation.image_url || product.image_url,
+        });
+      } else {
+        showError("Будь ласка, виберіть варіант товару.");
+      }
+    } else {
+      // For products without variations, add the product directly
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image_url: product.image_url,
+      });
+    }
   };
 
   if (loading) {
@@ -127,27 +180,55 @@ const LightingStore = () => {
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="flex flex-col justify-between">
-                <CardHeader className="p-0">
-                  <img
-                    src={product.image_url || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <div className="p-4">
-                    <CardTitle className="text-xl font-semibold">{product.name}</CardTitle>
-                    <CardDescription className="mt-2 text-sm text-gray-600 dark:text-gray-400">{product.description}</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{product.price} грн</p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button className="w-full" onClick={() => handleAddToCart(product)}>Додати в кошик</Button>
-                </CardFooter>
-              </Card>
-            ))}
+            {products.map((product) => {
+              const currentVariation = product.variations && product.variations.length > 0
+                ? selectedVariations[product.id] || product.variations[0]
+                : undefined;
+
+              const displayPrice = currentVariation ? currentVariation.price : product.price;
+              const displayImage = currentVariation?.image_url || product.image_url || "/placeholder.svg";
+
+              return (
+                <Card key={product.id} className="flex flex-col justify-between">
+                  <CardHeader className="p-0">
+                    <img
+                      src={displayImage}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    <div className="p-4">
+                      <CardTitle className="text-xl font-semibold">{product.name}</CardTitle>
+                      <CardDescription className="mt-2 text-sm text-gray-600 dark:text-gray-400">{product.description}</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    {product.variations && product.variations.length > 0 && (
+                      <div className="mb-4">
+                        <Select
+                          onValueChange={(value) => handleVariationChange(product.id, value)}
+                          value={currentVariation?.id}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Виберіть варіант" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {product.variations.map((variation) => (
+                              <SelectItem key={variation.id} value={variation.id}>
+                                {variation.variation_name} - {variation.price} грн
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{displayPrice.toFixed(2)} грн</p>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0">
+                    <Button className="w-full" onClick={() => handleAddToCart(product)}>Додати в кошик</Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
