@@ -12,11 +12,18 @@ serve(async (req) => {
 
   try {
     const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    const managerChatId = Deno.env.get('TELEGRAM_MANAGER_CHAT_ID');
+    const managerChatIdsString = Deno.env.get('TELEGRAM_MANAGER_CHAT_ID');
 
-    if (!telegramBotToken || !managerChatId) {
+    if (!telegramBotToken || !managerChatIdsString) {
       console.error('TELEGRAM_BOT_TOKEN or TELEGRAM_MANAGER_CHAT_ID is not set in Supabase secrets.');
       return new Response('Telegram bot token or manager chat ID not configured.', { status: 500, headers: corsHeaders });
+    }
+
+    const managerChatIds = managerChatIdsString.split(',').map(id => id.trim()).filter(id => id.length > 0);
+
+    if (managerChatIds.length === 0) {
+      console.error('No valid manager chat IDs found in TELEGRAM_MANAGER_CHAT_ID.');
+      return new Response('No valid manager chat IDs configured.', { status: 500, headers: corsHeaders });
     }
 
     const { orderNumber, items, totalAmount, customerInfo } = await req.json();
@@ -40,19 +47,22 @@ ${orderDetails}
 `;
 
     const telegramApiUrl = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
-    await fetch(telegramApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: managerChatId,
-        text: messageText,
-        parse_mode: 'Markdown',
-      }),
-    });
 
-    return new Response('Order sent to Telegram successfully!', { headers: corsHeaders });
+    for (const chatId of managerChatIds) {
+      await fetch(telegramApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: messageText,
+          parse_mode: 'Markdown',
+        }),
+      });
+    }
+
+    return new Response('Order sent to Telegram managers successfully!', { headers: corsHeaders });
   } catch (error) {
     console.error('Error sending order to Telegram:', error);
     return new Response(`Error: ${error.message}`, { status: 500, headers: corsHeaders });
