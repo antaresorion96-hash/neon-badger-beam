@@ -128,16 +128,16 @@ const LightingStore = () => {
         </p>
 
         {/* Нова група кнопок */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8"> {/* Змінено на flex */}
           <Button onClick={() => setIsCategorySheetOpen(true)} className="w-full py-3 text-lg">
             Каталог
           </Button>
-          <Link to="/order-tracking">
+          <Link to="/order-tracking" className="w-full"> {/* Додано w-full для Link */}
             <Button className="w-full py-3 text-lg">
               Мої замовлення
             </Button>
           </Link>
-          <Link to="/cart">
+          <Link to="/cart" className="w-full"> {/* Додано w-full для Link */}
             <Button className="w-full py-3 text-lg">
               <ShoppingCart className="h-5 w-5 mr-2" /> Кошик
             </Button>
