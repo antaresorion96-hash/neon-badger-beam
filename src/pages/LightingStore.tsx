@@ -5,11 +5,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
-import { Link, useNavigate } from "react-router-dom"; // Додано useNavigate
+import { Link } from "react-router-dom"; // useNavigate більше не потрібен, якщо немає пошуку замовлень
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input"; // Імпортуємо Input
+// Input більше не потрібен
 import CategorySheet from "@/components/CategorySheet";
 
 interface ProductVariation {
@@ -37,13 +37,13 @@ interface Category {
 
 const LightingStore = () => {
   const { addToCart } = useCart();
-  const navigate = useNavigate(); // Ініціалізуємо useNavigate
+  // useNavigate більше не потрібен
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState<{ [productId: string]: ProductVariation }>({});
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
-  const [orderSearchInput, setOrderSearchInput] = useState<string>(''); // Стан для поля пошуку замовлень
+  // orderSearchInput та setOrderSearchInput більше не потрібні
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,14 +112,7 @@ const LightingStore = () => {
     }
   };
 
-  const handleOrderSearch = () => {
-    if (orderSearchInput.trim()) {
-      navigate(`/order-tracking/${orderSearchInput.trim()}`);
-      setOrderSearchInput(''); // Очистити поле вводу після пошуку
-    } else {
-      showError("Будь ласка, введіть номер замовлення для пошуку.");
-    }
-  };
+  // handleOrderSearch більше не потрібен
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-700 dark:text-gray-300">Завантаження товарів...</div>;
@@ -135,17 +128,7 @@ const LightingStore = () => {
           Відкрийте для себе ідеальне освітлення для вашого дому.
         </p>
 
-        {/* Поле пошуку замовлень */}
-        <div className="flex gap-2 mb-4">
-          <Input
-            type="text"
-            placeholder="Моє замовлення"
-            value={orderSearchInput}
-            onChange={(e) => setOrderSearchInput(e.target.value)}
-            className="flex-grow"
-          />
-          <Button onClick={handleOrderSearch}>Пошук</Button>
-        </div>
+        {/* Поле пошуку замовлень видалено */}
 
         {/* Кнопки Каталог та Кошик */}
         <div className="flex gap-4 mb-8 flex-wrap justify-center">
