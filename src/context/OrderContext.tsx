@@ -12,15 +12,22 @@ interface OrderItem {
   quantity: number;
 }
 
+interface CustomerInfo {
+  name: string;
+  phone: string;
+  city: string;
+}
+
 interface Order {
   orderNumber: string;
   items: OrderItem[];
   totalAmount: number;
   timestamp: string;
+  customerInfo: CustomerInfo; // Додаємо інформацію про клієнта
 }
 
 interface OrderContextType {
-  placeOrder: (items: OrderItem[], total: number) => string;
+  placeOrder: (items: OrderItem[], total: number, customerInfo: CustomerInfo) => string;
   getOrder: (orderNumber: string) => Order | undefined;
 }
 
@@ -40,13 +47,14 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('orders', JSON.stringify(orders));
   }, [orders]);
 
-  const placeOrder = useCallback((items: OrderItem[], total: number): string => {
+  const placeOrder = useCallback((items: OrderItem[], total: number, customerInfo: CustomerInfo): string => {
     const orderNumber = uuidv4();
     const newOrder: Order = {
       orderNumber,
       items,
       totalAmount: total,
       timestamp: new Date().toISOString(),
+      customerInfo, // Зберігаємо інформацію про клієнта
     };
     setOrders((prevOrders) => [...prevOrders, newOrder]);
     showSuccess(`Замовлення №${orderNumber.substring(0, 8)} успішно оформлено!`);
