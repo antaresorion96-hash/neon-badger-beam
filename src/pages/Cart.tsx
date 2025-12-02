@@ -19,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client"; // Імпортуємо supabase клієнт
 
 // Схема валідації для форми замовлення
 const formSchema = z.object({
@@ -54,11 +55,31 @@ const Cart = () => {
     };
 
     const orderNumber = placeOrder(cartItems, totalAmount, customerInfo);
+    
+    // Відправка даних замовлення в Telegram через Edge Function
+    try {
+      const { data, error } = await supabase.functions.invoke('send-order-to-telegram', {
+        body: {
+          orderNumber,
+          items: cartItems,
+          totalAmount,
+          customerInfo,
+        },
+      });
+
+      if (error) {
+        console.error("Помилка відправки замовлення в Telegram:", error);
+        showError("Помилка відправки замовлення менеджеру.");
+      } else {
+        console.log("Замовлення успішно відправлено в Telegram:", data);
+      }
+    } catch (error) {
+      console.error("Непередбачена помилка при виклику Edge Function:", error);
+      showError("Непередбачена помилка при відправці замовлення.");
+    }
+
     clearCart();
     navigate(`/order-confirmation/${orderNumber}`);
-
-    // TODO: Відправка даних замовлення в Telegram через Edge Function
-    // Ця частина буде реалізована після отримання Telegram Chat ID менеджера
   };
 
   return (
