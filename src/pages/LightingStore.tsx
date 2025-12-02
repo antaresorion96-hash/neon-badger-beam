@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Додано useNavigate
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CategorySheet from "@/components/CategorySheet"; // Імпортуємо новий компонент
+import { Input } from "@/components/ui/input"; // Імпортуємо Input
+import CategorySheet from "@/components/CategorySheet";
 
 interface ProductVariation {
   id: string;
@@ -36,20 +37,21 @@ interface Category {
 
 const LightingStore = () => {
   const { addToCart } = useCart();
+  const navigate = useNavigate(); // Ініціалізуємо useNavigate
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState<{ [productId: string]: ProductVariation }>({});
-  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false); // Стан для CategorySheet
+  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
+  const [orderSearchInput, setOrderSearchInput] = useState<string>(''); // Стан для поля пошуку замовлень
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       
-      // Fetch products and their variations
       let productsQuery = supabase
         .from('products')
-        .select('*, product_variations(*)') // Fetch products and their related variations
+        .select('*, product_variations(*)')
         .order('name', { ascending: true });
 
       if (selectedCategory) {
@@ -64,11 +66,9 @@ const LightingStore = () => {
         const fetchedProducts: Product[] = productsData as Product[];
         setProducts(fetchedProducts);
 
-        // Initialize selected variations for products with variations
         const initialSelectedVariations: { [productId: string]: ProductVariation } = {};
         fetchedProducts.forEach(product => {
           if (product.product_variations && product.product_variations.length > 0) {
-            // Select the FIRST variation as default
             initialSelectedVariations[product.id] = product.product_variations[0];
           }
         });
@@ -94,7 +94,7 @@ const LightingStore = () => {
       const selectedVariation = selectedVariations[product.id];
       if (selectedVariation) {
         addToCart({
-          id: selectedVariation.id, // Use variation ID for cart item
+          id: selectedVariation.id,
           name: `${product.name} (${selectedVariation.variation_name})`,
           price: selectedVariation.price,
           image_url: selectedVariation.image_url || product.image_url,
@@ -103,13 +103,21 @@ const LightingStore = () => {
         showError("Будь ласка, виберіть варіант товару.");
       }
     } else {
-      // For products without variations, add the product directly
       addToCart({
         id: product.id,
         name: product.name,
         price: product.price,
         image_url: product.image_url,
       });
+    }
+  };
+
+  const handleOrderSearch = () => {
+    if (orderSearchInput.trim()) {
+      navigate(`/order-tracking/${orderSearchInput.trim()}`);
+      setOrderSearchInput(''); // Очистити поле вводу після пошуку
+    } else {
+      showError("Будь ласка, введіть номер замовлення для пошуку.");
     }
   };
 
@@ -127,16 +135,23 @@ const LightingStore = () => {
           Відкрийте для себе ідеальне освітлення для вашого дому.
         </p>
 
-        {/* Нова група кнопок */}
-        <div className="flex gap-4 mb-8 flex-wrap justify-center"> {/* Змінено на flex та flex-wrap */}
+        {/* Поле пошуку замовлень */}
+        <div className="flex gap-2 mb-4">
+          <Input
+            type="text"
+            placeholder="Моє замовлення"
+            value={orderSearchInput}
+            onChange={(e) => setOrderSearchInput(e.target.value)}
+            className="flex-grow"
+          />
+          <Button onClick={handleOrderSearch}>Пошук</Button>
+        </div>
+
+        {/* Кнопки Каталог та Кошик */}
+        <div className="flex gap-4 mb-8 flex-wrap justify-center">
           <Button onClick={() => setIsCategorySheetOpen(true)} className="flex-1 min-w-[120px] py-3 text-lg">
             Каталог
           </Button>
-          <Link to="/order-tracking" className="flex-1 min-w-[120px]">
-            <Button className="w-full py-3 text-lg">
-              Мої замовлення
-            </Button>
-          </Link>
           <Link to="/cart" className="flex-1 min-w-[120px]">
             <Button className="w-full py-3 text-lg">
               <ShoppingCart className="h-5 w-5 mr-2" /> Кошик
