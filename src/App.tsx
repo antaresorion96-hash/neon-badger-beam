@@ -10,6 +10,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import OrderTracking from "./pages/OrderTracking";
 import { CartProvider } from "./context/CartContext";
 import { OrderProvider } from "./context/OrderContext";
+import FloatingCartButton from "./components/FloatingCartButton"; // Імпортуємо новий компонент
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <FloatingCartButton /> {/* Додаємо плаваючу кнопку кошика тут */}
           </OrderProvider>
         </CartProvider>
       </BrowserRouter>
