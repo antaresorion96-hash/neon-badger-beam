@@ -77,6 +77,7 @@ const OrderTracking = () => {
                         src={item.image_url || "/placeholder.svg"}
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded-md mr-3"
+                        loading="lazy" // Додано lazy loading
                       />
                       <div>
                         <p className="font-medium">{item.name}</p>

@@ -108,6 +108,7 @@ const Cart = () => {
                       src={item.image_url || "/placeholder.svg"}
                       alt={item.name}
                       className="w-20 h-20 object-cover rounded-md mr-4"
+                      loading="lazy" // Додано lazy loading
                     />
                     <div className="flex-grow">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">{item.name}</h3>

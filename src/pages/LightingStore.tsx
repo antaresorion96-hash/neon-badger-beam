@@ -5,11 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
-import { Link } from "react-router-dom"; // useNavigate більше не потрібен, якщо немає пошуку замовлень
+import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// Input більше не потрібен
 import CategorySheet from "@/components/CategorySheet";
 
 interface ProductVariation {
@@ -37,13 +36,11 @@ interface Category {
 
 const LightingStore = () => {
   const { addToCart } = useCart();
-  // useNavigate більше не потрібен
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState<{ [productId: string]: ProductVariation }>({});
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
-  // orderSearchInput та setOrderSearchInput більше не потрібні
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,8 +109,6 @@ const LightingStore = () => {
     }
   };
 
-  // handleOrderSearch більше не потрібен
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-700 dark:text-gray-300">Завантаження товарів...</div>;
   }
@@ -128,9 +123,6 @@ const LightingStore = () => {
           Відкрийте для себе ідеальне освітлення для вашого дому.
         </p>
 
-        {/* Поле пошуку замовлень видалено */}
-
-        {/* Кнопки Каталог та Кошик */}
         <div className="flex gap-4 mb-8 flex-wrap justify-center">
           <Button onClick={() => setIsCategorySheetOpen(true)} className="flex-1 min-w-[120px] py-3 text-lg">
             Каталог
@@ -142,7 +134,6 @@ const LightingStore = () => {
           </Link>
         </div>
 
-        {/* CategorySheet компонент */}
         <CategorySheet
           isOpen={isCategorySheetOpen}
           onClose={() => setIsCategorySheetOpen(false)}
@@ -173,6 +164,7 @@ const LightingStore = () => {
                       src={displayImage}
                       alt={product.name}
                       className="w-full h-48 object-cover rounded-t-lg"
+                      loading="lazy" // Додано lazy loading
                     />
                     <div className="p-4">
                       <CardTitle className="text-xl font-semibold">{product.name}</CardTitle>
